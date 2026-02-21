@@ -1,17 +1,35 @@
-# Use Node.js 18 as base image
-FROM node:18
+# -------------------------
+#   Builder Stage
+# -------------------------
+FROM node:18 AS builder
 
-# Set working directory
+WORKDIR /app
+
+# Copy dependency definitions
+COPY package*.json ./
+
+# Install all dependencies (including dev)
+RUN npm install
+
+# Copy application source
+COPY . .
+
+
+# -------------------------
+#   Runtime Stage
+# -------------------------
+FROM node:18-alpine AS runtime
+
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install ONLY production dependencies
+RUN npm install --omit=dev
 
-# Copy everything (not just src)
-COPY . .
+# Copy application source from builder
+COPY --from=builder /app /app
 
 # Expose port
 EXPOSE 5001
