@@ -58,6 +58,8 @@ if (process.env.NODE_ENV !== "test") {
 
     connectDB()
         .then(async () => {
+            console.log("🔌 Connected to MongoDB successfully.");
+
             await seedAdmin();
             await populateDatabase();
 

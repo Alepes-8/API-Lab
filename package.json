@@ -9,7 +9,17 @@
   },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+
+    "dev": "docker compose --env-file .env.dev -f docker-compose.dev.yml up ",
+    "dev:build": "docker compose --env-file .env.dev -f docker-compose.dev.yml up --build",
+    "dev:clean": "docker compose --env-file .env.dev -f docker-compose.dev.yml down -v",
+
+    "prod:deploy": "docker compose --env-file .env.prod up -d", 
+    "prod:clean": "docker compose --env-file .env.prod -f docker-compose.prod.yml down -v",
+
+    "staging:deploy": "docker compose --env-file .env.staging up -d",
+    "staging:clean": "docker compose --env-file .env.staging -f docker-compose.staging.yml down -v"
   },
   "jest": {
     "moduleNameMapper": {

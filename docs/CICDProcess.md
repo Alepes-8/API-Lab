@@ -18,7 +18,7 @@ When changes are pushed to the main branch, the necessary tests are run to ensur
 
 ## CI/CD Dockerized Setup
 
-When pushing changes to the `main` branch, there is a GitHub Action script, **DockerCDSetup.yml**, which builds Docker images, runs tests, and deploys the images to GitHub’s container registry (GHCR).  
+When pushing changes to the `Production` branch, there is a GitHub Action script, **CD_Docker.yml**, which builds Docker images, runs tests, and deploys the images to GitHub’s container registry (GHCR).  
 
 This setup provides several benefits:  
 - Every change lives in one ecosystem under the umbrella of GitHub.  
@@ -58,3 +58,13 @@ To fix this, follow these steps:
 That’s it — once this is set up, GitHub Actions will be able to build and push your Docker images to GHCR.
 
 ---
+
+## The different Files
+
+For the different process within a CI/CD system there are different files setup in order to handle the different processs accordingly. 
+
+### API.yml
+
+The `API.yml` file contains the information and process required for the CI process. Which in turn is run onces for each pull request or push that are sent to the `Production`, `dev`, or `staging` branch. This way the system can verify that the the system works as intended prior any large publishing or push to production and any other main focused branch. It is important to catch the errors as quickly as possible.
+
+This process is utulising the docker-compose.test.yml file in order to generate the nessusary docker tests.
