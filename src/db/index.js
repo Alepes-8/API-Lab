@@ -5,7 +5,7 @@ export const connectDB = async () => {
     const MONGO_URI = getMongoURI();
 
     if (!MONGO_URI) {
-        console.warn("⚠️ MONGO_URI missing, falling back to localhost");
+        console.warn("MONGO_URI missing, falling back to localhost");
         process.exit(1);
     }
 
@@ -15,7 +15,7 @@ export const connectDB = async () => {
     mongoose.set("strictQuery", true);
 
     await mongoose.connect(uri);
-    console.log("✅ MongoDB connected");
+    console.log("MongoDB connected");
 
     return mongoose.connection;
 };

@@ -3,15 +3,11 @@ name: CI Test
 on:
   push:
     branches:
-      - Production
-      - dev
-      - staging
+      - '**'
   pull_request:
     branches:
-      - Production
-      - dev
-      - staging
-
+      - '**'
+      
 jobs:
   test:
     runs-on: ubuntu-latest  # Sets up a virtual machine to run the job on (ubuntu-latest, windows-latest, macos-latest)

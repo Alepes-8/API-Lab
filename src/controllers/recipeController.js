@@ -13,9 +13,9 @@ export const healthCheck = async (req, res) => {
 async function checkMongoAlive() {
     try {
         await mongoose.connection.db.admin().ping();
-        return "MongoDB reachable ✅";
+        return "MongoDB reachable";
     } catch (err) {
-        return "MongoDB NOT reachable ❌";
+        return "MongoDB NOT reachable";
     }
 };
 
