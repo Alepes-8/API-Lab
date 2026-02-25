@@ -14,15 +14,16 @@ RUN npm install
 # Copy application source
 COPY . .
 
-
 # -------------------------
-#   Runtime Stage
+#   Runtime Stage (non-root)
 # -------------------------
 FROM node:18-alpine AS runtime
 
 WORKDIR /app
 
-# Copy package files
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 COPY package*.json ./
 
 # Install ONLY production dependencies
@@ -31,8 +32,11 @@ RUN npm install --omit=dev
 # Copy application source from builder
 COPY --from=builder /app /app
 
-# Expose port
-EXPOSE 5001
+# Change ownership of app directory to non-root user
+RUN chown -R appuser:appgroup /app
 
-# Start app
+# Switch to non-root user
+USER appuser
+
+EXPOSE 5001
 CMD ["node", "src/app.js"]

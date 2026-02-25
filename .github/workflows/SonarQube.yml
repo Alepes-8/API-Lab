@@ -2,11 +2,10 @@ name: SonarCloud Analysis
 
 on:
   push:
-    branches:
-      - '**'
+    branches: [ Production ]
+    
   pull_request:
-    branches:
-      - '**'
+    branches: [ Production ]
 
 jobs:
   sonarcloud:
