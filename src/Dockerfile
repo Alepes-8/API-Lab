@@ -1,20 +1,42 @@
-# Use Node.js 18 as base image
-FROM node:18
+# -------------------------
+#   Builder Stage
+# -------------------------
+FROM node:18 AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy dependency definitions
 COPY package*.json ./
 
-# Install dependencies
+# Install all dependencies (including dev)
 RUN npm install
 
-# Copy everything (not just src)
+# Copy application source
 COPY . .
 
-# Expose port
-EXPOSE 5001
+# -------------------------
+#   Runtime Stage (non-root)
+# -------------------------
+FROM node:18-alpine AS runtime
 
-# Start app
+WORKDIR /app
+
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY package*.json ./
+
+# Install ONLY production dependencies
+RUN npm install --omit=dev
+
+# Copy application source from builder
+COPY --from=builder /app /app
+
+# Change ownership of app directory to non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+EXPOSE 5001
 CMD ["node", "src/app.js"]
