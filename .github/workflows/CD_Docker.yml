@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/drink_api
+      IMAGE_NAME: ghcr.io/${{ github.actor }}/drink_api
       IMAGE_TAG: ${{ github.sha }}
     
     steps:
@@ -49,5 +49,5 @@ jobs:
       # Create and push dev tag
       - name: Tag and push dev
         run: |
-          docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:dev
+          docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:dev
           docker push $IMAGE_NAME:dev
