@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - '**'
-      
+
 jobs:
   test:
     runs-on: ubuntu-latest  # Sets up a virtual machine to run the job on (ubuntu-latest, windows-latest, macos-latest)

@@ -1,14 +1,17 @@
 name: CD Docker Build and Push
 
-
 on:
   push:
-    branches: [ Production ]
+    branches: [ Dev ]
 
 jobs:
   cd-build-and-push:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/drink_api
+      IMAGE_TAG: ${{ github.sha }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -42,14 +45,9 @@ jobs:
 
       - name: Push images to GHCR
         run: docker compose -f docker-compose.yml push
-        
-  deploy-render:
-    needs: cd-build-and-push
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Trigger Render Deploy
+      # Create and push dev tag
+      - name: Tag and push dev
         run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK"
-        env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:dev
+          docker push $IMAGE_NAME:dev
