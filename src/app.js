@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === "production") {
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 
-console.log("📘 Swagger docs available at: http://localhost:5001/api-docs");
+console.log("Swagger docs available at: http://localhost:5001/api-docs");
 
 // ----------------- Routes -----------------
 app.set("trust proxy", 1);
@@ -58,15 +58,17 @@ if (process.env.NODE_ENV !== "test") {
 
     connectDB()
         .then(async () => {
+            console.log("Connected to MongoDB successfully.");
+
             await seedAdmin();
             await populateDatabase();
 
             app.listen(PORT, () => {
-                console.log(`🚀 Server running on port ${PORT}`);
+                console.log(`Server running on port ${PORT}`);
             });
         })
         .catch(err => {
-            console.error("❌ DB connection failed:", err);
+            console.error("DB connection failed:", err);
             process.exit(1);
         });
 }

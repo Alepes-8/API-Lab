@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: mongo_dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-dev-data:/data/db
+
+  drink_api:
+    container_name: drink_api_dev
+    build:
+      context: .
+      dockerfile: ./src/Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      PORT: ${PORT}
+      MONGO_URI: ${MONGO_URI}
+      NODE_ENV: ${NODE_ENV}
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npx nodemon src/app.js
+    env_file:
+      - ./.env.dev    # <-- ensures all env variables are loaded
+volumes:
+  mongo-dev-data: # Separate volume for dev

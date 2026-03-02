@@ -1,14 +1,17 @@
 name: CD Docker Build and Push
 
-
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
 
 jobs:
   cd-build-and-push:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_NAME: ghcr.io/alepes-8/api_lab # TODO Update with your GitHub username if not using a personal account but a dynamic image tag to ensure unique images for each commit, which is important for rollbacks and tracking
+      IMAGE_TAG: ${{ github.sha }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -35,21 +38,16 @@ jobs:
           echo "APP_ADMIN_PASSWORD=${{ secrets.APP_ADMIN_PASSWORD }}" >> .env
 
       - name: Run tests
-        run: docker compose run --rm -e NODE_ENV=test drink_api npm test
+        run: docker compose run --rm -e NODE_ENV=test api_lab npm test
 
       - name: Stop services
         run: docker compose -f docker-compose.yml down
 
       - name: Push images to GHCR
         run: docker compose -f docker-compose.yml push
-        
-  deploy-render:
-    needs: cd-build-and-push
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Trigger Render Deploy
+      # Create and push dev tag
+      - name: Tag and push dev
         run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK"
-        env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:dev
+          docker push $IMAGE_NAME:dev

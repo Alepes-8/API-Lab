@@ -1,0 +1,29 @@
+name: Promote to Staging
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: ghcr.io/alepes-8/api_lab
+
+    steps:
+      - name: Login to GHCR
+        env:
+            SECRET: ${{ secrets.GHCR_PAT }}
+        run: echo "$SECRET" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull latest dev image
+        run: docker pull $IMAGE_NAME:dev
+
+      - name: Tag as staging
+        run: docker tag $IMAGE_NAME:dev $IMAGE_NAME:staging
+
+      - name: Push staging tag
+        run: docker push $IMAGE_NAME:staging
+
+
