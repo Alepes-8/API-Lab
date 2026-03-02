@@ -38,7 +38,7 @@ jobs:
           echo "APP_ADMIN_PASSWORD=${{ secrets.APP_ADMIN_PASSWORD }}" >> .env
 
       - name: Run tests
-        run: docker compose run --rm -e NODE_ENV=test drink_api npm test
+        run: docker compose run --rm -e NODE_ENV=test api_lab npm test
 
       - name: Stop services
         run: docker compose -f docker-compose.yml down
