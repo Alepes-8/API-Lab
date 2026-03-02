@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.actor.toLower() }}/drink_api
+      IMAGE_NAME: ghcr.io/${{ github.actor.toLowerCase }}/drink_api
       IMAGE_TAG: ${{ github.sha }}
     
     steps:
