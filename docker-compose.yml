@@ -18,8 +18,9 @@ services:
     ports:
       - "${PORT}:${PORT}"
     environment:
-      PORT: ${PORT}
-      MONGO_URI: ${MONGO_URI}
+      PORT: ${PORT:-5001}
+      MONGO_URI: ${MONGO_URI:-dummy}
+      JWT_SECRET: ${JWT_SECRET:-dummy}
     depends_on:
       - mongo
           
