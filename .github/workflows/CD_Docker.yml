@@ -2,7 +2,7 @@ name: CD Docker Build and Push
 
 on:
   push:
-    branches: [ Dev ]
+    branches: [ dev ]
 
 jobs:
   cd-build-and-push:
