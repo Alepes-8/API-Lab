@@ -19,7 +19,11 @@ jobs:
       # This could have been set to GITHUB_TOKEN, but I created a GHCR_PAT token instead for more granular control
       # As this is a personal repository, I used my personal account to create the token where GITHUB_TOKEN would be for an origniastion.
       - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
       # Will set up Docker Buildx following the docker-compose.yml, but will not run the containers
       - name: Build all services
