@@ -16,11 +16,11 @@ services:
       dockerfile: src/Dockerfile
     image: ghcr.io/alepes-8/drink_api:${GITHUB_SHA} # The image name to be used when pushing to GHCR
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT:-5001}:${PORT:-5001}"
     environment:
-      PORT: ${PORT:-5001}
-      MONGO_URI: ${MONGO_URI:-dummy}
-      JWT_SECRET: ${JWT_SECRET:-dummy}
+      - PORT=${PORT:-5001}
+      - MONGO_URI=${MONGO_URI:-dummy}
+      - JWT_SECRET=${JWT_SECRET:-dummy}
     depends_on:
       - mongo
           
