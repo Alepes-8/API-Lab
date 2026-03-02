@@ -13,7 +13,9 @@ jobs:
 
     steps:
       - name: Login to GHCR
-        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        env:
+            SECRET: ${{ secrets.GHCR_PAT }}
+        run: echo "$SECRET" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Pull latest dev image
         run: docker pull $IMAGE_NAME:dev
