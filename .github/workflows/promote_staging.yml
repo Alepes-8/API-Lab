@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ghcr.io/alepes-8/API_Lab
+      IMAGE_NAME: ghcr.io/alepes-8/api_lab
 
     steps:
       - name: Login to GHCR
