@@ -123,5 +123,3 @@ jobs:
 #           # Tear down containers and volumes after tests
 #           docker-compose -f ./docker-compose.test.yml down --volumes
               
-      - name: CD Docker Build and Push
-        uses: ./.github/workflows/CD_Docker.yml
