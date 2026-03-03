@@ -123,3 +123,6 @@ jobs:
 #           # Tear down containers and volumes after tests
 #           docker-compose -f ./docker-compose.test.yml down --volumes
               
+  Call-CD-Docker:
+    needs: CI-Test
+    uses: ./.github/workflows/CD_Docker.yml
