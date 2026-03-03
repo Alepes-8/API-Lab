@@ -1,25 +1,31 @@
 name: CD Docker Build and Push
 
 on:
-  workflow_run:
-    workflows: ["CI Test"]
-    types:
-      - completed
+  workflow_call:
+    secrets:
+      GHCR_PAT:
+        required: true
+      MONGO_URI:
+        required: true
+      JWT_SECRET:
+        required: true
+      APP_ADMIN_USERNAME:
+        required: true
+      APP_ADMIN_PASSWORD:
+        required: true
 
 jobs:
   cd-build-and-push:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ghcr.io/alepes-8/api_lab # TODO Update with your GitHub username if not using a personal account but a dynamic image tag to ensure unique images for each commit, which is important for rollbacks and tracking.
+      IMAGE_NAME: ghcr.io/alepes-8/api_lab
       IMAGE_TAG: ${{ github.sha }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # This could have been set to GITHUB_TOKEN, but I created a GHCR_PAT token instead for more granular control
-      # As this is a personal repository, I used my personal account to create the token where GITHUB_TOKEN would be for an origniastion.
       - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
@@ -27,11 +33,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
 
-      # Will set up Docker Buildx following the docker-compose.yml, but will not run the containers
       - name: Build all services
         run: docker compose -f docker-compose.yml build
 
-      # Run tests in the test containers defined in docker-compose.yml
       - name: Start dependent services
         run: docker compose -f docker-compose.yml up -d mongo
 
@@ -52,7 +56,6 @@ jobs:
       - name: Push images to GHCR
         run: docker compose -f docker-compose.yml push
 
-      # Create and push dev tag
       - name: Tag and push dev
         run: |
           docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:dev
