@@ -8,6 +8,7 @@ on:
 
 jobs:
   CI-Test:
+    if: github.event_name != 'push' || github.event.pull_request == null || github.event.pull_request.base.ref == 'dev' # Only run on push to non-dev branches or on PRs targeting dev, to avoid running tests twice on PRs to dev
     runs-on: ubuntu-latest  # Sets up a virtual machine to run the job on (ubuntu-latest, windows-latest, macos-latest)
     env:  # TODO move this to the .env.test file and load it in the tesat container to avoid hardcoding secrets in the workflow file, but for now this is easier to set up and maintain
       APP_ADMIN_USERNAME: admin
