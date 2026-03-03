@@ -2,11 +2,9 @@ name: CI/CD Process
 
 on:
   push:
-    branches:
-      - '**'
+    branches: ['**']
   pull_request:
-    branches:
-      - '**'
+    branches: ['**']
 
 jobs:
   CI-Test:
