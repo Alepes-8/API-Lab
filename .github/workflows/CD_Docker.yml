@@ -1,13 +1,20 @@
 name: CD Docker Build and Push
 
 on:
-  push:
-    branches: [ dev ]
+  workflow_run:
+    workflows: ["CI Test"]
+    types:
+      - completed
 
 jobs:
   cd-build-and-push:
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'dev'
+      }}
     runs-on: ubuntu-latest
-
+    
     env:
       IMAGE_NAME: ghcr.io/alepes-8/api_lab # TODO Update with your GitHub username if not using a personal account but a dynamic image tag to ensure unique images for each commit, which is important for rollbacks and tracking.
       IMAGE_TAG: ${{ github.sha }}
