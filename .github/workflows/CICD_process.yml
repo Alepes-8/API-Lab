@@ -1,4 +1,4 @@
-name: CI-Test
+name: CI/CD Process
 
 on:
   push:
@@ -125,6 +125,7 @@ jobs:
 
   Call-CD-Docker:
     needs: CI-Test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/CD_Docker.yml
     secrets:
       GHCR_PAT: ${{ secrets.GHCR_PAT }}
