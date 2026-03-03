@@ -123,9 +123,5 @@ jobs:
 #           # Tear down containers and volumes after tests
 #           docker-compose -f ./docker-compose.test.yml down --volumes
               
-  Call-CD-Docker:
-    needs: cd-build-and-push
-    runs-on: ubuntu-latest
-    steps:
       - name: CD Docker Build and Push
         uses: ./.github/workflows/CD_Docker.yml
