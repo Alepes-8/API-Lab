@@ -93,7 +93,7 @@ jobs:
       # Pushes the base SHA-tagged image first, then retags it with:
       #   - latest  → always the most recent dev build
       #   - dev     → current dev branch image
-      #   - vX.X.X  → immutable versioned tag for this build
+      #   - vX.X.X  → immutable versioned tag for this build 
       - name: Push SHA-tagged image
         run: docker compose -f docker-compose.yml push
 
