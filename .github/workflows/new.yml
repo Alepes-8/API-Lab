@@ -180,7 +180,6 @@ jobs:
             -Dsonar.organization=alepes-8
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
-
   # ─────────────────────────────────────────────
   # JOB 4: Deploy
   # Only runs on push to dev, after BOTH sonarcloud and DockerTest pass
