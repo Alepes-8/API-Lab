@@ -8,6 +8,10 @@ on:
   pull_request:
     branches: ['**']  # Run CI on PRs targeting any branch
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
 
   # ─────────────────────────────────────────────
@@ -188,6 +192,9 @@ jobs:
     name: Deploy to Docker Registry
     needs: [sonarcloud, DockerTest]  # sonarcloud implies ProgramTest also passed
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    permissions:
+      contents: write    # ← explicitly elevated for this job only
+      packages: write
     uses: ./.github/workflows/CD_Docker.yml
     secrets:
       GHCR_PAT: ${{ secrets.GHCR_PAT }}

@@ -7,11 +7,9 @@ on:
 jobs:
   promote:
     runs-on: ubuntu-latest
-
-    # Required so the job can commit the bumped VERSION file back to the repo
-    permissions:
+    permissions:    # Required so the job can commit the bumped VERSION file back to the repo
       contents: write
-
+      packages: write
     env:
       IMAGE_NAME: ghcr.io/alepes-8/drink_api
 
