@@ -13,6 +13,10 @@ on:
         required: true
       APP_ADMIN_PASSWORD:
         required: true
+    
+    permissions:  
+      contents: write
+      packages: write
 
 jobs:
   cd-build-and-push:
