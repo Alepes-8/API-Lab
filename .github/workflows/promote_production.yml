@@ -1,0 +1,28 @@
+name: Promote to Production
+
+on:
+  push: 
+    branches: [ Production ]
+
+  jobs:
+    promote:
+      runs-on: ubuntu-latest
+
+      env:
+        IMAGE_NAME: ghcr.io/alepes-8/drink_api
+
+      steps:
+        - name: Login to GHCR
+          env:
+              SECRET: ${{ secrets.GHCR_PAT }}
+          run: echo "$SECRET" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+        - name: Pull latest staging image
+          run: docker pull $IMAGE_NAME:staging
+
+        - name: Tag as Production
+          run: docker tag $IMAGE_NAME:prod $IMAGE_NAME:staging
+
+        - name: Push Production tag
+          run: docker push $IMAGE_NAME:prod
+        
