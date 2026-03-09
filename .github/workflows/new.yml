@@ -180,7 +180,7 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.projectKey=Alepes-8_API-Lab
+            -Dsonar.projectKey=Alepes-8_Drink-API
             -Dsonar.organization=alepes-8
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
