@@ -1,23 +1,28 @@
-version: "3.9"
 services:
   mongo:
     image: mongo:5.0
-    ports:
-      - "27017:27017"
+    restart: "no"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
-  
+
   drink_api:
     build:
       context: .
       dockerfile: ./src/Dockerfile
+      args:
+        APP_VERSION: test
+        BUILD_SHA: local
+    restart: "no"
     environment:
-      PORT: ${PORT}
-      MONGO_URI: ${MONGO_URI}
+      PORT: ${PORT:-5001}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/drink}
+      NODE_ENV: test
     depends_on:
       mongo:
         condition: service_healthy
+    env_file:
+      - ./.env.test
     command: npm test -- --coverage

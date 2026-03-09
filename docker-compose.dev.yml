@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   mongo:
     image: mongo:5.0
@@ -14,12 +12,16 @@ services:
     build:
       context: .
       dockerfile: ./src/Dockerfile
+      args:
+        APP_VERSION: dev
+        BUILD_SHA: local
+    user: root          # dev only — needed for nodemon hot reload with volume mount
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT:-5001}:${PORT:-5001}"
     environment:
-      PORT: ${PORT}
+      PORT: ${PORT:-5001}
       MONGO_URI: ${MONGO_URI}
-      NODE_ENV: ${NODE_ENV}
+      NODE_ENV: ${NODE_ENV:-development}
     depends_on:
       - mongo
     volumes:
@@ -27,6 +29,7 @@ services:
       - /app/node_modules
     command: npx nodemon src/app.js
     env_file:
-      - ./.env.dev    # <-- ensures all env variables are loaded
+      - ./.env.dev
+
 volumes:
-  mongo-dev-data: # Separate volume for dev
+  mongo-dev-data:
