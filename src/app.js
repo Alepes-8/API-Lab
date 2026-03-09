@@ -54,7 +54,7 @@ app.use("/drink", routes);
 
 // ---------- Connect to DB & Start Server ----------
 if (process.env.NODE_ENV !== "test") {
-    console.log("🔌 Connecting to MongoDB...");
+    console.log("Connecting to MongoDB...");
 
     connectDB()
         .then(async () => {
