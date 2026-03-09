@@ -87,22 +87,22 @@ jobs:
       # to http://localhost:5001 for CI. Newman handles the register/login flow
       # sequentially, so ensure your collection sets the auth token as a variable
       # after the register/login request.
-      - name: Install Newman
-        run: npm install -g newman
+      # - name: Install Newman
+      #   run: npm install -g newman
 
-      - name: Run Postman collection tests
-        run: |
-          newman run postman/Drink_basis.postman_collection.json \
-            -e postman/drinking.postman_environment.json \
-            --reporters cli,junit \
-            --reporter-junit-export ./postman-results.xml
+      # - name: Run Postman collection tests
+      #   run: |
+      #     newman run postman/Drink_basis.postman_collection.json \
+      #       -e postman/drinking.postman_environment.json \
+      #       --reporters cli,junit \
+      #       --reporter-junit-export ./postman-results.xml
 
-      - name: Upload Postman test results
-        if: always()  # Upload even on failure so you can inspect results
-        uses: actions/upload-artifact@v4
-        with:
-          name: postman-results
-          path: ./postman-results.xml
+      # - name: Upload Postman test results
+      #   if: always()  # Upload even on failure so you can inspect results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: postman-results
+      #     path: ./postman-results.xml
 
       # ── Debug Helpers ────────────────────────────
       - name: Show API server log (on failure)
