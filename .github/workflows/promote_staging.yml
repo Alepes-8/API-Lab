@@ -4,24 +4,24 @@ on:
   push:
     branches: [ staging ]
 
-  jobs:
-    promote:
-      runs-on: ubuntu-latest
+jobs:
+  promote:
+    runs-on: ubuntu-latest
 
-      env:
-        IMAGE_NAME: ghcr.io/alepes-8/drink_api # TODO Update with your GitHub username if not using a personal account but a dynamic image tag to ensure unique images for each commit, which is important for rollbacks and tracking.
+    env:
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api
 
-      steps:
-        - name: Login to GHCR
-          env:
-              SECRET: ${{ secrets.GHCR_PAT }}
-          run: echo "$SECRET" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+    steps:
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-        - name: Pull latest dev image
-          run: docker pull $IMAGE_NAME:dev
+      # Pulls whatever is currently tagged as 'dev' (latest dev build)
+      # and promotes it to 'staging' — no version bump needed at this stage.
+      - name: Pull latest dev image
+        run: docker pull $IMAGE_NAME:dev
 
-        - name: Tag as staging
-          run: docker tag $IMAGE_NAME:dev $IMAGE_NAME:staging
+      - name: Tag as staging
+        run: docker tag $IMAGE_NAME:dev $IMAGE_NAME:staging
 
-        - name: Push staging tag
-          run: docker push $IMAGE_NAME:staging
+      - name: Push staging tag
+        run: docker push $IMAGE_NAME:staging
