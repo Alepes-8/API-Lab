@@ -23,7 +23,7 @@ jobs:
       packages: write
 
     env:
-      IMAGE_NAME: ghcr.io/alepes-8/drink_api
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api_home_lab
 
     steps:
       - name: Checkout code
@@ -84,7 +84,7 @@ jobs:
           echo "APP_ADMIN_PASSWORD=${{ secrets.APP_ADMIN_PASSWORD }}" >> .env
 
       - name: Run tests in Docker
-        run: docker compose run --rm -e NODE_ENV=test drink_api npm test
+        run: docker compose run --rm -e NODE_ENV=test drink_api_home_lab npm test
 
       - name: Stop services
         run: docker compose -f docker-compose.yml down

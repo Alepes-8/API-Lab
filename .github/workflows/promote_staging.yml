@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: ghcr.io/alepes-8/drink_api
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api_home_lab
 
     steps:
       - name: Login to GHCR

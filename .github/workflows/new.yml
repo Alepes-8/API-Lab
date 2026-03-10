@@ -61,11 +61,11 @@ jobs:
             sleep 2
           done
 
-      - name: Install drink_api dependencies
+      - name: Install drink_api_home_lab dependencies
         working-directory: ./src
         run: npm install
 
-      - name: Start the drink_api
+      - name: Start the drink_api_home_lab
         working-directory: ./src
         run: node app.js > server.log 2>&1 &
 

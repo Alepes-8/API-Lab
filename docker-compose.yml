@@ -9,12 +9,12 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  drink_api:
-    container_name: drink_api
+  drink_api_home_lab:
+    container_name: drink_api_home_lab
     build:
       context: .
       dockerfile: src/Dockerfile
-    image: ghcr.io/alepes-8/drink_api:${GITHUB_SHA} # The image name to be used when pushing to GHCR
+    image: ghcr.io/alepes-8/drink_api_home_lab:${GITHUB_SHA} # The image name to be used when pushing to GHCR
     ports:
       - "${PORT:-5001}:${PORT:-5001}"
     environment:

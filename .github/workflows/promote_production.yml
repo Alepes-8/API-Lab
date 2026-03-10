@@ -11,7 +11,7 @@ jobs:
       contents: write
       packages: write
     env:
-      IMAGE_NAME: ghcr.io/alepes-8/drink_api
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api_home_lab
 
     steps:
       - name: Checkout code
