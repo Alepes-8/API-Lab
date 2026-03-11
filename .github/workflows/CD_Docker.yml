@@ -69,10 +69,13 @@ jobs:
 
       # ── Build ─────────────────────────────────────
       - name: Build all services
+        env:
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker compose -f docker-compose.yml build \
             --build-arg APP_VERSION=${{ steps.version.outputs.version }} \
             --build-arg BUILD_SHA=${{ github.sha }}
+
 
       # ── Test ──────────────────────────────────────
       - name: Start dependent services
@@ -89,8 +92,10 @@ jobs:
       - name: Run tests in Docker
         run: docker compose run --rm -e NODE_ENV=test drink_api npm test
 
-      - name: Stop services
-        run: docker compose -f docker-compose.yml down
+      - name: Push SHA-tagged image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: docker compose -f docker-compose.yml push
 
       # ── Push ──────────────────────────────────────
       # Pushes the base SHA-tagged image first, then retags it with:
