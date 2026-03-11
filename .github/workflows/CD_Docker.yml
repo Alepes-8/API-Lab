@@ -69,7 +69,10 @@ jobs:
 
       # ── Build ─────────────────────────────────────
       - name: Build all services
-        run: docker compose -f docker-compose.yml build
+        run: |
+          docker compose -f docker-compose.yml build \
+            --build-arg APP_VERSION=${{ steps.version.outputs.version }} \
+            --build-arg BUILD_SHA=${{ github.sha }}
 
       # ── Test ──────────────────────────────────────
       - name: Start dependent services
