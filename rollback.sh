@@ -65,7 +65,7 @@ echo "  Rolling back $location to $version..."
 # NOTE: In future this block will be executed via SSH once the
 # docker-compose files are moved to the server:
 #   ssh user@server "cd /path/to/project && ./rollback.sh $location $version"
-
+echo "$GHCR_PAT" docker login ghcr.io -u "$GHCR_USER" --password-stdin
 IMAGE_TAG=$version docker compose -f docker-compose.$location.yml pull
 docker compose -f docker-compose.$location.yml down
 IMAGE_TAG=$version docker compose --env-file .env.$location -f docker-compose.$location.yml up -d --no-build
