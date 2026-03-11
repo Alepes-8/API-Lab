@@ -1,12 +1,15 @@
 # Tokens to use
 
-For the current system setup, only one token is strictly required: the SonarCloud token — if you want SonarCloud to function as intended.
+For the current setup, there are two tokans that are required for the system to work as intended.
 
-However, additional tokens may be required depending on your specific setup and deployment requirements. For example, you may need a token for a Render application if your code is deployed to a cloud service. Read the `SonarQube` documentation for details on how to configure it properly.
+- `SONAR_TOKEN`
+- `GHCR_PAT`
 
-Another commonly required token is **GHCR_PAT** (GitHub Container Registry Personal Access Token).  
-To learn how to set this up, go to the `CICDProcess.md` file and read the section:
-- Setup: Push Your Own Docker Image to GitHub Container Registry
+Where the **SONAR_TOKEN** is setup in order to assist the system in connecting the sonarqube and github project.
+
+Where the **GHCR_PAT** (GitHub Container Registry Personal Access Token) is used to suport the systems storage solution for the container image. The container image is created with the help of the CI/CD process, that in turn published to the githubs local ecosystem for packages. Where this token is required as a password to allow the project to publish to the given location. Where the given location is currently set as *ghcr.io/alepes-8/drink_api_home_lab*.
+
+To learn how to set this up, go to the `CICDProcess.md` file and read the section.
 
 ---
 

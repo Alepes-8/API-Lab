@@ -9,18 +9,20 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  drink_api_home_lab:
-    container_name: drink_api_home_lab
+  drink_api:
+    container_name: drink_api
     build:
       context: .
       dockerfile: src/Dockerfile
-    image: ghcr.io/alepes-8/drink_api_home_lab:${GITHUB_SHA} # The image name to be used when pushing to GHCR
+    image: ghcr.io/alepes-8/drink_api_home_lab:${IMAGE_TAG:-latest}
     ports:
       - "${PORT:-5001}:${PORT:-5001}"
     environment:
       - PORT=${PORT:-5001}
       - MONGO_URI=${MONGO_URI:-dummy}
       - JWT_SECRET=${JWT_SECRET:-dummy}
+      - APP_ADMIN_USERNAME=${APP_ADMIN_USERNAME:-dummy}
+      - APP_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:-dummy}
     depends_on:
       - mongo
           
