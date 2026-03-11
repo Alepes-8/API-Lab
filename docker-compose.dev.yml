@@ -7,8 +7,8 @@ services:
     volumes:
       - mongo-dev-data:/data/db
 
-  drink_api_home_lab:
-    container_name: drink_api_home_lab_dev
+  drink_api:
+    container_name: drink_api
     build:
       context: .
       dockerfile: ./src/Dockerfile
