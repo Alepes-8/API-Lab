@@ -98,7 +98,7 @@ jobs:
       #   - dev     → current dev branch image
       #   - vX.X.X  → immutable versioned tag for this build 
       - name: Push SHA-tagged image
-        run: docker compose -f docker-compose.yml push
+        run: IMAGE_TAG=${{ github.sha }} docker compose -f docker-compose.yml push
 
       - name: Tag and push dev, latest, and version tags
         run: |
