@@ -10,7 +10,7 @@ import { connectDB } from "./db/index.js";
 import routes from "./routes/routes.js";
 import { populateDatabase } from "./populateDatabase.js"; 
 import { seedAdmin } from "./authentication/seedAdmin.js";
-
+import logger from './utils/logger.js';
 dotenv.config();
 
 const app = express();
@@ -25,12 +25,13 @@ const swaggerDocument = YAML.load(swaggerPath);
 
 import { swaggerUi, swaggerSpec } from "../swagger/swaggerConfig.js";
 
+
 if (process.env.NODE_ENV === "production") {
     app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
         const protocol = req.headers["x-forwarded-proto"] || req.protocol;
         const host = req.headers["x-forwarded-host"] || req.get("host");
 
-        console.log(`swagger address ${protocol}://${host}/drink`)
+        logger.info(`swagger address ${protocol}://${host}/drink`)
         
         return swaggerUi.setup({
             ...swaggerDocument,
@@ -41,7 +42,7 @@ if (process.env.NODE_ENV === "production") {
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 
-console.log("Swagger docs available at: http://localhost:5001/api-docs");
+logger.info("Swagger docs available at: http://localhost:5001/api-docs");
 
 // ----------------- Routes -----------------
 app.set("trust proxy", 1);
@@ -54,21 +55,21 @@ app.use("/drink", routes);
 
 // ---------- Connect to DB & Start Server ----------
 if (process.env.NODE_ENV !== "test") {
-    console.log("Connecting to MongoDB...");
+    logger.info("Connecting to MongoDB...");
 
     connectDB()
         .then(async () => {
-            console.log("Connected to MongoDB successfully.");
+            logger.info("Connected to MongoDB successfully.");
 
             await seedAdmin();
             await populateDatabase();
 
             app.listen(PORT, () => {
-                console.log(`Server running on port ${PORT}`);
+                logger.info(`Server running on port ${PORT}`);
             });
         })
         .catch(err => {
-            console.error("DB connection failed:", err);
+            logger.error( err, "DB connection failed:");
             process.exit(1);
         });
 }

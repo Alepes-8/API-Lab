@@ -6,10 +6,10 @@ export function getMongoURI() {
 
     if (!uri) {
         if (NODE_ENV === "production") {
-            console.error("MONGO_URI is not defined. Set it in Render environment variables!");
+            logger.error("MONGO_URI is not defined. Set it in Render environment variables!");
             process.exit(1);
         } else {
-            console.warn("MONGO_URI not defined, falling back to localhost for development");
+            logger.warn("MONGO_URI not defined, falling back to localhost for development");
             uri = "mongodb://localhost:27017/drink";
         }
     }

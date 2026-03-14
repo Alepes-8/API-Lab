@@ -1,0 +1,47 @@
+// Configure pino with your JSON shape and environment-aware transport (pretty in dev, raw JSON in prod).
+// Replace console.log calls — anywhere you're currently logging, swap to logger.info(), logger.error(), etc. warn/log/error
+// Add a request logging middleware — one middleware that fires on every request and logs { method, url, statusCode, responseTime, requestId }. This is where requestId gets attached.
+
+/** Normal message is formated as following
+ *      - {"level":30,"time":1773492773905,"pid":42120,"hostname":"DESKTOP-OUO8URB","msg":"Hello, world!"}
+ * 
+ * But of course it all can be adjusted.You can set levels with costumeLevels, or perhaps adjust the formating of a given message
+ * Such as in this case, instead of giving logging with a level number, instead we have adjusted it to value of "error", "info", and
+ * the rest of the logging values. This way it is easier and quicker to know if it is an error or just a message.
+ * 
+ * If you wanna redirect information, look
+ */
+import pino from 'pino';
+const __dirname = import.meta.dirname;
+const env = process.env.NODE_ENV || 'development';
+const logPath = process.env.LOG_FILE_PATH || './logs/app.log';
+
+const fileTransport = pino.transport({
+
+
+    if(env === 'production' || env === 'staging'){
+           
+    }
+
+    target: 'pino/file',
+    options: { 
+        
+    },
+
+});
+
+const logger = pino(
+    {
+        level: process.env.PINO_LOG_LEVEL || 'info',
+        formatters: {
+            level: (label) => {
+                return { level: label.toUpperCase()};
+            }
+        },
+        timestamp: pino.stdTimeFunctions.isoTime,
+    },
+    fileTransport
+);
+
+export default logger;
+
