@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { beforeEach, jest } from "@jest/globals";
+import mongoose from "mongoose";
+import * as dbModule from "../../src/db/index.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -14,11 +16,23 @@ let logger;
 let app;
 let processExitSpy;
 
+
+
 describe("Drink API Integration Tests", () => {
+    const { connectDB, disconnectDB, getMongoURI } = dbModule;
 
     beforeEach(async () => {
         jest.resetModules();
 
+         // Mock getMongoURI
+        await jest.unstable_mockModule("../../src/db/index.js", async () => {
+            const originalModule = await import("../../src/db/index.js");
+            return {
+            ...originalModule,
+            getMongoURI: jest.fn(),
+            };
+        });
+        
         // Mock logger FIRST
         jest.unstable_mockModule('../../src/utils/logger.js', () => ({
             default: {
@@ -60,6 +74,37 @@ describe("Drink API Integration Tests", () => {
         expect(logger.info).toHaveBeenCalledWith(
             expect.stringContaining("Connecting to MongoDB")
         );
+    });
+
+    it("should connect to MongoDB when MONGO_URI is provided", async () => {
+        getMongoURI.mockReturnValue("mongodb://test-uri:27017/testdb");
+        const connectSpy = jest.spyOn(mongoose, "connect").mockResolvedValue();
+
+        const conn = await connectDB();
+
+        expect(connectSpy).toHaveBeenCalledWith("mongodb://test-uri:27017/testdb");
+        expect(logger.info).toHaveBeenCalledWith("MongoDB connected");
+
+        connectSpy.mockRestore();
+    });
+
+    it("should warn and exit process when MONGO_URI is missing", async () => {
+        getMongoURI.mockReturnValue(null);
+        const exitSpy = jest.spyOn(process, "exit").mockImplementation(() => { throw new Error("process.exit called"); });
+
+        await expect(connectDB()).rejects.toThrow("process.exit called");
+        expect(logger.warn).toHaveBeenCalledWith(
+        "MONGO_URI missing, falling back to localhost"
+        );
+
+        exitSpy.mockRestore();
+    });
+
+    it("should disconnect from MongoDB", async () => {
+        const disconnectSpy = jest.spyOn(mongoose, "disconnect").mockResolvedValue();
+        await disconnectDB();
+        expect(disconnectSpy).toHaveBeenCalled();
+        disconnectSpy.mockRestore();
     });
 
     it("GET /drink/health should return health status", async () => {
