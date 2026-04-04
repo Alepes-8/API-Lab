@@ -87,7 +87,7 @@ jobs:
         run: mkdir -p ./logs
 
       - name: Run Jest tests with coverage
-        run: npm test -- --coverage
+        run: node --max-old-space-size=4096 node_modules/jest/bin/jest.js --runInBand --coverage
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
