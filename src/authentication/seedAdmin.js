@@ -1,5 +1,6 @@
 import UserRoles from "../models/userRoles.js";
 import Users from "../models/users.js";
+import logger from "../utils/logger.js"
 
 export async function seedAdmin() {
     const username = process.env.APP_ADMIN_USERNAME?.toLowerCase();
@@ -12,8 +13,8 @@ export async function seedAdmin() {
     const existing = await Users.findOne({email: username });
 
     if (existing) {
-    console.log("Admin user already exists. Skipping creation.");
-    return;
+        logger.info("Admin user already exists. Skipping creation.");
+        return;
     }
 
     const userRole = await UserRoles.findOneAndUpdate(
@@ -33,5 +34,5 @@ export async function seedAdmin() {
         role: userRole._id
     });
 
-    console.log(`Admin user '${username}' created successfully.`);
+    logger.info(`Admin user '${username}' created successfully.`);
 }
