@@ -12,9 +12,12 @@ import { seedAdmin } from "./authentication/seedAdmin.js";
 import logger from './utils/logger.js';
 dotenv.config();
 
+import { requestLogger } from './middleware/requestLogger.js';
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger); 
 
 // ---------- Swagger ----------
 const __filename = fileURLToPath(import.meta.url);
@@ -54,7 +57,7 @@ app.use("/drink", routes);
 
 // ---------- Connect to DB & Start Server ----------
 if (process.env.NODE_ENV !== "test") {
-    logger.info("Connecting to MongoDB...");
+    logger.info("Connecting to MongoDB");
 
     connectDB()
         .then(async () => {

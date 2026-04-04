@@ -11,37 +11,35 @@
  * 
  * If you wanna redirect information, look
  */
+
 import pino from 'pino';
-const __dirname = import.meta.dirname;
+
 const env = process.env.NODE_ENV || 'development';
 const logPath = process.env.LOG_FILE_PATH || './logs/app.log';
 
-const fileTransport = pino.transport({
-
-
-    if(env === 'production' || env === 'staging'){
-           
-    }
-
-    target: 'pino/file',
-    options: { 
-        
-    },
-
-});
+const transport = env === 'development'
+  ? pino.transport({
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: 'SYS:standard',
+        ignore: 'pid,hostname',
+      },
+    })
+  : pino.transport({
+      target: 'pino/file',
+      options: { destination: logPath, mkdir: true },
+    });
 
 const logger = pino(
-    {
-        level: process.env.PINO_LOG_LEVEL || 'info',
-        formatters: {
-            level: (label) => {
-                return { level: label.toUpperCase()};
-            }
-        },
-        timestamp: pino.stdTimeFunctions.isoTime,
+  {
+    level: process.env.PINO_LOG_LEVEL || 'info',
+    formatters: {
+      level: (label) => ({ level: label.toUpperCase() }),
     },
-    fileTransport
+    timestamp: pino.stdTimeFunctions.isoTime,
+  },
+  transport
 );
 
 export default logger;
-
