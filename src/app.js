@@ -2,9 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import YAML from "yamljs";
-import path from "path";
+import path from "node:path";
 import { fileURLToPath } from "url";
-
 import { PORT } from "./config/config.js";
 import { connectDB } from "./db/index.js";
 import routes from "./routes/routes.js";
@@ -23,7 +22,7 @@ const __dirname = path.dirname(__filename);
 const swaggerPath = path.resolve(__dirname, "../swagger/src/routes/openapi.yaml");
 const swaggerDocument = YAML.load(swaggerPath);
 
-import { swaggerUi, swaggerSpec } from "../swagger/swaggerConfig.js";
+import { swaggerUi } from "../swagger/swaggerConfig.js";
 
 if (process.env.NODE_ENV === "production") {
     app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
