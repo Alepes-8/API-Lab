@@ -31,14 +31,18 @@ const transport = env === 'development'
       options: { destination: logPath, mkdir: true },
     });
 
+const isTest = process.env.NODE_ENV === "test";
+
 const logger = pino(
-  {
-    level: process.env.PINO_LOG_LEVEL || 'info',
-    formatters: {
-      level: (label) => ({ level: label.toUpperCase() }),
+      isTest
+    ? { enabled: false } // disables logging completely
+    : {
+        level: process.env.PINO_LOG_LEVEL || 'info',
+        formatters: {
+        level: (label) => ({ level: label.toUpperCase() }),
+        },
+        timestamp: pino.stdTimeFunctions.isoTime,
     },
-    timestamp: pino.stdTimeFunctions.isoTime,
-  },
   transport
 );
 
