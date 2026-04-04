@@ -4,17 +4,30 @@ services:
   mongo:
     image: mongo:latest
     container_name: mongo
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     ports: 
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
   drink_api:
+    depends_on:
+      mongo:
+        condition: service_healthy
     container_name: drink_api
     build:
       context: .
       dockerfile: src/Dockerfile
     image: ghcr.io/alepes-8/drink_api_home_lab:${IMAGE_TAG:-latest}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-5001}/drink/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     ports:
       - "${PORT:-5001}:${PORT:-5001}"
     environment:
@@ -23,8 +36,6 @@ services:
       - JWT_SECRET=${JWT_SECRET:-dummy}
       - APP_ADMIN_USERNAME=${APP_ADMIN_USERNAME:-dummy}
       - APP_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:-dummy}
-    depends_on:
-      - mongo
           
 volumes:
   mongo-data:
