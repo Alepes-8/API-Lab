@@ -27,8 +27,9 @@ ENV BUILD_SHA=$BUILD_SHA
 
 WORKDIR /app
 
+# Install curl for health checks
 # Create a non-root user and group
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup && apk add --no-cache curl
 
 COPY package*.json ./
 
