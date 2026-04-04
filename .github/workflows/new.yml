@@ -77,6 +77,15 @@ jobs:
         run: npm install
 
       # ── Unit Tests ──────────────────────────────
+      - name: Set NODE_ENV
+        run: echo "NODE_ENV=test" >> $GITHUB_ENV
+
+      - name: Set log file path
+        run: echo "LOG_FILE_PATH=./logs/app.log" >> $GITHUB_ENV
+
+      - name: Create logs directory
+        run: mkdir -p ./logs
+
       - name: Run Jest tests with coverage
         run: npm test -- --coverage
 

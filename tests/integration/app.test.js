@@ -41,7 +41,6 @@ describe("Drink API Integration Tests", () => {
         app = (await import("../../src/app.js")).default;
 
         expect(logger.info).not.toHaveBeenCalledWith(
-            expect.anything(),
             expect.stringContaining("Connecting to MongoDB")
         );
     });

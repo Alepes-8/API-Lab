@@ -16,8 +16,9 @@ import pino from 'pino';
 
 const env = process.env.NODE_ENV || 'development';
 const logPath = process.env.LOG_FILE_PATH || './logs/app.log';
+const isTest = process.env.NODE_ENV === 'test';
 
-const transport = env === 'development'
+const transport = env === 'development' || isTest
   ? pino.transport({
       target: 'pino-pretty',
       options: {
@@ -31,18 +32,16 @@ const transport = env === 'development'
       options: { destination: logPath, mkdir: true },
     });
 
-const isTest = process.env.NODE_ENV === "test";
-
 const logger = pino(
-      isTest
-    ? { enabled: false } // disables logging completely
+  isTest
+    ? { enabled: false } // disable logging entirely in tests
     : {
         level: process.env.PINO_LOG_LEVEL || 'info',
         formatters: {
-        level: (label) => ({ level: label.toUpperCase() }),
+          level: (label) => ({ level: label.toUpperCase() }),
         },
         timestamp: pino.stdTimeFunctions.isoTime,
-    },
+      },
   transport
 );
 
