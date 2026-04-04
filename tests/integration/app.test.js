@@ -58,7 +58,7 @@ describe("Drink API Integration Tests", () => {
 
         // Assert
         expect(res.statusCode).toBe(STATUS_CODES.SUCCESS);
-        expect(res.body.apiCalled).toBe("ok");
+        expect(res.body.status).toBe("ok");
         expect(typeof res.body.mongoStatus).toBe("string");
         expect(res.body.mongoStatus.length).toBeGreaterThan(0);
     });

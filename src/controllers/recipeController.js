@@ -7,7 +7,7 @@ import Notes from '../models/notes.js';
 import Ratings from '../models/ratings.js';
 
 export const healthCheck = async (req, res) => {
-    res.status(STATUS_CODES.SUCCESS).json({apiCalled: 'ok', env: process.env.NODE_ENV, version: process.env.APP_VERSION, sha: process.env.BUILD_SHA, mongoStatus: await checkMongoAlive()})
+    res.status(STATUS_CODES.SUCCESS).json({status: 'ok', env: process.env.NODE_ENV, version: process.env.APP_VERSION, sha: process.env.BUILD_SHA, mongoStatus: await checkMongoAlive()})
 }
 
 async function checkMongoAlive() {
