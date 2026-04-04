@@ -15,7 +15,8 @@ async function checkMongoAlive() {
         await mongoose.connection.db.admin().ping();
         return "MongoDB reachable";
     } catch (err) {
-        throw new Error("MongoDB connection failed: " + err.message);
+        //throw new Error("MongoDB connection failed: " + err.message);
+        return "MongoDB NOT reachable";
     }
 };
 
