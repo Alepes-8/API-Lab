@@ -6,8 +6,7 @@ activeRequests.set(0);
 
 export function metricsMiddleware(req, res, next) {
 
-      // Skip the metrics endpoint itself
-    console.log('metricsMiddleware hit:', req.path)
+    // Skip the metrics endpoint itself
     if (req.path.endsWith('/metrics')) {
         return next();
     }
