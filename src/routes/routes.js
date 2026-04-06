@@ -3,8 +3,11 @@ import recipeController from "../controllers/recipeController.js";
 import authenticationController from "../controllers/authenticationController.js";
 import auth from "../authentication/authMiddleware.js"
 import requiredRole from "../authentication/authRole.js";
+import prometheus from "../controllers/prometheus/prometheusController.js";
 
 const router = express.Router();
+
+router.get("/metrics", prometheus.metrics)
 
 router.post("/login", authenticationController.login)
 router.post("/register", authenticationController.register)
