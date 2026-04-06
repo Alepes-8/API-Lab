@@ -9,6 +9,7 @@ import { connectDB } from "./db/index.js";
 import routes from "./routes/routes.js";
 import { populateDatabase } from "./populateDatabase.js"; 
 import { seedAdmin } from "./authentication/seedAdmin.js";
+import { metricsMiddleware } from "./middleware/prometheus.js";
 import logger from './utils/logger.js';
 dotenv.config();
 
@@ -18,6 +19,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger); 
+app.use(metricsMiddleware);
 
 // ---------- Swagger ----------
 const __filename = fileURLToPath(import.meta.url);
