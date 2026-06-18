@@ -11,6 +11,12 @@ const filePath = path.resolve(dirname, "./config/testData/drinks_start_A.json");
 export const START_DATA = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
 export async function populateDatabase() {
+    const count = await DrinkRecipe.countDocuments();
+    if (count > 0) {
+        logger.info("Database already populated, skipping seed.");
+        return;
+    }
+    
     await DrinkRecipe.deleteMany();
 
     const everyDrink = START_DATA.DATA.map(drink => {
