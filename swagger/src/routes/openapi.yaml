@@ -7,6 +7,8 @@ info:
 servers:
   - url: http://localhost:5001/drink
     description: API service for Drink catalog
+  - url: http://localhost:5002/drink
+    description: API service for Drink catalog
 
 paths:
   /health:
