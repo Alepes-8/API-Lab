@@ -1,6 +1,6 @@
 import DrinkRecipe from "./models/drinkRecipe.js";
 import Ingredients from "./models/ingredients.js";
-
+import logger from './utils/logger.js';
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,7 +16,7 @@ export async function populateDatabase() {
         logger.info("Database already populated, skipping seed.");
         return;
     }
-    
+
     await DrinkRecipe.deleteMany();
 
     const everyDrink = START_DATA.DATA.map(drink => {
