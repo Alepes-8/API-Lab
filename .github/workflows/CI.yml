@@ -1,0 +1,213 @@
+name: CI/CD Full Process
+
+on:
+  push:
+    branches:
+      - dev        # Only run on direct pushes to dev (needed for CD job)
+      - staging
+  pull_request:
+    branches: ['**']  # Run CI on PRs targeting any branch
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+
+  # ─────────────────────────────────────────────
+  # JOB 1: Unit + Postman Tests
+  # Runs in parallel with DockerTest
+  # ─────────────────────────────────────────────
+  ProgramTest:
+    name: Run Unit/Postman Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:5.0
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd="mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Loads vars from .env.test into GITHUB_ENV so all subsequent steps can use them.
+      # Your .env.test file should contain: APP_ADMIN_USERNAME, APP_ADMIN_PASSWORD,
+      # JWT_SECRET, MONGO_URI, PORT — and should NOT be committed to version control.
+      - name: Load environment variables from .env.test
+        run: |
+          while IFS= read -r line || [ -n "$line" ]; do
+            [[ "$line" =~ ^#.*$ ]] && continue  # Skip comments
+            [[ -z "$line" ]] && continue          # Skip blank lines
+            echo "$line" >> $GITHUB_ENV
+          done < .env.test
+
+      - name: Wait for MongoDB
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y netcat-openbsd
+          until nc -z localhost 27017; do
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+
+      - name: Install drink_api_home_lab dependencies
+        working-directory: ./src
+        run: npm install
+
+      - name: Start the drink_api_home_lab
+        working-directory: ./src
+        run: node app.js > server.log 2>&1 &
+
+      - name: Wait for Drink API to be ready
+        working-directory: ./src
+        run: npx wait-on --timeout 60000 http://localhost:5001/drink/health
+
+      - name: Install root dependencies
+        run: npm install
+
+      # ── Unit Tests ──────────────────────────────
+      - name: Set NODE_ENV
+        run: echo "NODE_ENV=test" >> $GITHUB_ENV
+
+      - name: Set log file path
+        run: echo "LOG_FILE_PATH=./logs/app.log" >> $GITHUB_ENV
+
+      - name: Create logs directory
+        run: mkdir -p ./logs
+
+      - name: Run Jest tests with coverage
+        run: npm test -- --coverage
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage  # SonarCloud will download this in its job
+
+      # ── Postman Tests ───────────────────────────
+      # Note: Ensure postman/drinking.postman_environment.json has baseUrl set
+      # to http://localhost:5001 for CI. Newman handles the register/login flow
+      # sequentially, so ensure your collection sets the auth token as a variable
+      # after the register/login request.
+      # - name: Install Newman
+      #   run: npm install -g newman
+
+      # - name: Run Postman collection tests
+      #   run: |
+      #     newman run postman/Drink_basis.postman_collection.json \
+      #       -e postman/drinking.postman_environment.json \
+      #       --reporters cli,junit \
+      #       --reporter-junit-export ./postman-results.xml
+
+      # - name: Upload Postman test results
+      #   if: always()  # Upload even on failure so you can inspect results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: postman-results
+      #     path: ./postman-results.xml
+
+      # ── Debug Helpers ────────────────────────────
+      - name: Show API server log (on failure)
+        if: failure()
+        working-directory: ./src
+        run: cat server.log
+
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Docker Compose Tests
+  # Runs in parallel with ProgramTest
+  # ─────────────────────────────────────────────
+  DockerTest:
+    name: Run Docker Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Load environment variables from .env.test
+        run: |
+          while IFS= read -r line || [ -n "$line" ]; do
+            [[ "$line" =~ ^#.*$ ]] && continue
+            [[ -z "$line" ]] && continue
+            echo "$line" >> $GITHUB_ENV
+          done < .env.test
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2  # v3.10.0
+
+      - name: Install docker-compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.1/docker-compose-$(uname -s)-$(uname -m)" \
+            -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Run Dockerized Tests
+        run: |
+          docker-compose -f ./docker-compose.test.yml up --build --abort-on-container-exit
+          docker-compose -f ./docker-compose.test.yml down --volumes
+
+
+  # ─────────────────────────────────────────────
+  # JOB 3: SonarCloud Analysis
+  # Runs after ProgramTest (reuses its coverage — no duplicate test run)
+  # ─────────────────────────────────────────────
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: ProgramTest  # Waits for coverage artifact to be available
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required for full SonarCloud blame analysis
+
+      - name: Download coverage report from ProgramTest
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage  # Placed where sonar.javascript.lcov.reportPaths expects it
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@d08d592c0b694607865c089cba90bbf87c9a6d89
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed for PR decoration
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          args: >
+            -Dsonar.projectKey=Alepes-8_Drink-API
+            -Dsonar.organization=alepes-8
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Deploy
+  # Only runs on push to dev, after BOTH sonarcloud and DockerTest pass
+  # ─────────────────────────────────────────────
+  Call-CD-Docker:
+    name: Deploy to Docker Registry
+    needs: [sonarcloud, DockerTest]  # sonarcloud implies ProgramTest also passed
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    permissions:
+      contents: write    # ← explicitly elevated for this job only
+      packages: write
+    uses: ./.github/workflows/CD_Docker.yml
+    secrets:
+      GHCR_PAT: ${{ secrets.GHCR_PAT }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      APP_ADMIN_USERNAME: ${{ secrets.APP_ADMIN_USERNAME }}
+      APP_ADMIN_PASSWORD: ${{ secrets.APP_ADMIN_PASSWORD }}

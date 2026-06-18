@@ -22,7 +22,7 @@ describe("Drink API Integration Tests", () => {
 
         //Arrange
         expect(res.statusCode).toBe(STATUS_CODES.SUCCESS);
-        expect(res.body.apiCalled).toBe("ok");
+        expect(res.body.status).toBe("ok");
     });
     
     /* ---------------------------------------------------

@@ -1,0 +1,27 @@
+name: Promote to Staging
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api_home_lab
+
+    steps:
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Pulls whatever is currently tagged as 'dev' (latest dev build)
+      # and promotes it to 'staging' — no version bump needed at this stage.
+      - name: Pull latest dev image
+        run: docker pull $IMAGE_NAME:dev
+
+      - name: Tag as staging
+        run: docker tag $IMAGE_NAME:dev $IMAGE_NAME:staging
+
+      - name: Push staging tag
+        run: docker push $IMAGE_NAME:staging

@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 import { getMongoURI } from "../config/config.js";
+import logger from "../utils/logger.js"
 
 export const connectDB = async () => {
     const MONGO_URI = getMongoURI();
 
     if (!MONGO_URI) {
-        console.warn("⚠️ MONGO_URI missing, falling back to localhost");
+        logger.warn("MONGO_URI missing, falling back to localhost");
         process.exit(1);
     }
 
@@ -15,7 +16,7 @@ export const connectDB = async () => {
     mongoose.set("strictQuery", true);
 
     await mongoose.connect(uri);
-    console.log("✅ MongoDB connected");
+    logger.info("MongoDB connected");
 
     return mongoose.connection;
 };

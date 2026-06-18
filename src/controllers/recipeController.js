@@ -7,15 +7,16 @@ import Notes from '../models/notes.js';
 import Ratings from '../models/ratings.js';
 
 export const healthCheck = async (req, res) => {
-    res.status(STATUS_CODES.SUCCESS).json({apiCalled: 'ok', mongoStatus: await checkMongoAlive()})
+    res.status(STATUS_CODES.SUCCESS).json({status: 'ok', env: process.env.NODE_ENV, version: process.env.APP_VERSION, sha: process.env.BUILD_SHA, mongoStatus: await checkMongoAlive()})
 }
 
 async function checkMongoAlive() {
     try {
         await mongoose.connection.db.admin().ping();
-        return "MongoDB reachable ✅";
+        return "MongoDB reachable";
     } catch (err) {
-        return "MongoDB NOT reachable ❌";
+        //throw new Error("MongoDB connection failed: " + err.message);
+        return "MongoDB NOT reachable";
     }
 };
 

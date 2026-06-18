@@ -1,0 +1,66 @@
+name: Promote to Production
+
+on:
+  push:
+    branches: [ Production ]
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:    # Required so the job can commit the bumped VERSION file back to the repo
+      contents: write
+      packages: write
+    env:
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api_home_lab
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Version Bump (major) ─────────────────────
+      # Reads VERSION file (e.g. v0.0.5), bumps major and resets minor+patch.
+      # e.g. v0.0.5 → v1.0.0, v1.2.3 → v2.0.0
+      - name: Bump major version
+        id: version
+        run: |
+          CURRENT=$(cat VERSION)
+          CURRENT_CLEAN=${CURRENT#v}
+          MAJOR=$(echo $CURRENT_CLEAN | cut -d. -f1)
+          NEW_MAJOR=$((MAJOR + 1))
+          NEW_VERSION="v${NEW_MAJOR}.0.0"
+          echo $NEW_VERSION > VERSION
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped $CURRENT → $NEW_VERSION"
+
+      - name: Commit and push bumped VERSION
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "ci: bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git push
+
+      # ── Docker Promotion ──────────────────────────
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Pulls whatever is currently tagged as 'staging' and promotes it.
+      # This ensures prod always gets the exact same image that passed staging — 
+      # never a freshly built one that skipped that validation step.
+      - name: Pull staging image
+        run: docker pull $IMAGE_NAME:staging
+
+      - name: Tag as prod and versioned tag
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          docker tag $IMAGE_NAME:staging $IMAGE_NAME:prod
+          docker tag $IMAGE_NAME:staging $IMAGE_NAME:$VERSION
+
+      - name: Push prod and versioned tags
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          docker push $IMAGE_NAME:prod
+          docker push $IMAGE_NAME:$VERSION
