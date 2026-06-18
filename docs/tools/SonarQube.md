@@ -35,11 +35,11 @@ Go to **Security**, create a new token, and make sure to copy it before leaving 
 In the `SonarQube.yml` file, make sure to update the following properties:
 
 ```yaml
--Dsonar.projectKey=Alepes-8_API-Lab
+-Dsonar.projectKey=Alepes-8_Drink-API
 -Dsonar.organization=alepes-8
 ```
 
-![alt text](image.png)
+![alt text](img/sonarqubeSetupExample.png)
 
 Replace these values with the correct information found on the **Information** page of your project in SonarCloud (under the project you are working on).
 

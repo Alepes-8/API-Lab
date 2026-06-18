@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including dev)
-RUN npm install
+RUN npm install --ignore-scripts
 
 # Copy application source
 COPY . .
@@ -19,15 +19,23 @@ COPY . .
 # -------------------------
 FROM node:18-alpine AS runtime
 
+ARG APP_VERSION=dev
+ARG BUILD_SHA=unknown
+
+ENV APP_VERSION=$APP_VERSION
+ENV BUILD_SHA=$BUILD_SHA
+
 WORKDIR /app
 
+# Install curl for health checks
 # Create a non-root user and group
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup && apk add --no-cache curl
 
 COPY package*.json ./
 
+
 # Install ONLY production dependencies
-RUN npm install --omit=dev
+RUN npm install --ignore-scripts --omit=dev --omit=production && npm ci --ignore-scripts --only=production
 
 # Copy application source from builder
 COPY --from=builder /app /app

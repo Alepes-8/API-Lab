@@ -1,53 +1,119 @@
 name: CD Docker Build and Push
 
 on:
-  push:
-    branches: [ dev ]
+  workflow_call:
+    secrets:
+      GHCR_PAT:
+        required: true
+      MONGO_URI:
+        required: true
+      JWT_SECRET:
+        required: true
+      APP_ADMIN_USERNAME:
+        required: true
+      APP_ADMIN_PASSWORD:
+        required: true
 
 jobs:
   cd-build-and-push:
     runs-on: ubuntu-latest
 
+    permissions: # Required so the job can commit the bumped VERSION file back to the repo
+      contents: write
+      packages: write
+
     env:
-      IMAGE_NAME: ghcr.io/alepes-8/api_lab # TODO Update with your GitHub username if not using a personal account but a dynamic image tag to ensure unique images for each commit, which is important for rollbacks and tracking
-      IMAGE_TAG: ${{ github.sha }}
-    
+      IMAGE_NAME: ghcr.io/alepes-8/drink_api_home_lab
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          # Fetch full history so git push works correctly
+          fetch-depth: 0
+          # Use GITHUB_TOKEN so the commit push is authenticated
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # This could have been set to GITHUB_TOKEN, but I created a GHCR_PAT token instead for more granular control
-      # As this is a personal repository, I used my personal account to create the token where GITHUB_TOKEN would be for an origniastion.
+      # ── Version Bump (patch) ─────────────────────
+      # Reads VERSION file (e.g. v0.0.1), increments patch to v0.0.2,
+      # commits and pushes the updated VERSION file back to dev.
+      - name: Bump patch version
+        id: version
+        run: |
+          CURRENT=$(cat VERSION)                        # e.g. v0.0.1
+          CURRENT_CLEAN=${CURRENT#v}                    # strip leading 'v' → 0.0.1
+          MAJOR=$(echo $CURRENT_CLEAN | cut -d. -f1)
+          MINOR=$(echo $CURRENT_CLEAN | cut -d. -f2)
+          PATCH=$(echo $CURRENT_CLEAN | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}" # e.g. v0.0.2
+          echo $NEW_VERSION > VERSION
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped $CURRENT → $NEW_VERSION"
+
+      - name: Commit and push bumped VERSION
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "ci: bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git push
+
+      # ── Docker Login ─────────────────────────────
       - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
-      # Will set up Docker Buildx following the docker-compose.yml, but will not run the containers
+      # ── Build ─────────────────────────────────────
       - name: Build all services
-        run: docker compose -f docker-compose.yml build
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker compose -f docker-compose.yml build \
+            --build-arg APP_VERSION=${{ steps.version.outputs.version }} \
+            --build-arg BUILD_SHA=${{ github.sha }}
 
-      # Run tests in the test containers defined in docker-compose.yml
+
+      # ── Test ──────────────────────────────────────
       - name: Start dependent services
         run: docker compose -f docker-compose.yml up -d mongo
 
       - name: Create .env file
         run: |
-          echo "PORT=5001" >> .env
-          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "PORT=5001"                                    >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}"          >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"        >> .env
           echo "APP_ADMIN_USERNAME=${{ secrets.APP_ADMIN_USERNAME }}" >> .env
           echo "APP_ADMIN_PASSWORD=${{ secrets.APP_ADMIN_PASSWORD }}" >> .env
 
-      - name: Run tests
-        run: docker compose run --rm -e NODE_ENV=test api_lab npm test
+      - name: Run tests in Docker
+        run: docker compose run --rm -e NODE_ENV=test drink_api npm test
 
-      - name: Stop services
-        run: docker compose -f docker-compose.yml down
-
-      - name: Push images to GHCR
+      - name: Push SHA-tagged image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
         run: docker compose -f docker-compose.yml push
 
-      # Create and push dev tag
-      - name: Tag and push dev
+      # ── Push ──────────────────────────────────────
+      # Pushes the base SHA-tagged image first, then retags it with:
+      #   - latest  → always the most recent dev build
+      #   - dev     → current dev branch image
+      #   - vX.X.X  → immutable versioned tag for this build 
+      - name: Push SHA-tagged image
+        run: IMAGE_TAG=${{ github.sha }} docker compose -f docker-compose.yml push
+
+      - name: Tag and push dev, latest, and version tags
         run: |
-          docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:dev
+          VERSION=${{ steps.version.outputs.version }}
+          SHA_TAG=$IMAGE_NAME:${{ github.sha }}
+
+          docker tag $SHA_TAG $IMAGE_NAME:dev
+          docker tag $SHA_TAG $IMAGE_NAME:latest
+          docker tag $SHA_TAG $IMAGE_NAME:$VERSION
+
           docker push $IMAGE_NAME:dev
+          docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:$VERSION

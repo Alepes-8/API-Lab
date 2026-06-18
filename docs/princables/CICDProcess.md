@@ -54,6 +54,12 @@ To fix this, follow these steps:
    - Go to your repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.  
    - Name the secret `GHCR_PAT`.  
    - Paste in the token you created.  
+5. **Setup local set GHCR_PAT**
+   - open **git bash** on the computer
+   - run **export CHCR_PAT="`Copied GHCR_PAT VALUE`"**
+   - run **export GHCR_PAT="`github username`"**
+   - run **source ~/.bashrc**
+
 
 That’s it — once this is set up, GitHub Actions will be able to build and push your Docker images to GHCR.
 
