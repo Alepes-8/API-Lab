@@ -13,6 +13,8 @@ services:
       - mongo-dev-data:/data/db
 
   drink_api:
+    env_file:
+      - .env.dev
     container_name: drink_api
     build:
       context: .
@@ -28,18 +30,12 @@ services:
     user: root          # dev only — needed for nodemon hot reload with volume mount
     ports:
       - "${PORT:-5001}:${PORT:-5001}"
-    environment:
-      PORT: ${PORT:-5001}
-      MONGO_URI: ${MONGO_URI}
-      NODE_ENV: ${NODE_ENV:-development}
     depends_on:
       - mongo
     volumes:
       - .:/app
       - /app/node_modules
     command: npx nodemon src/app.js
-    env_file:
-      - ./.env.dev
 
 volumes:
   mongo-dev-data:

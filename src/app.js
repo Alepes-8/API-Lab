@@ -30,21 +30,23 @@ const swaggerDocument = YAML.load(swaggerPath);
 import { swaggerUi } from "../swagger/swaggerConfig.js";
 
 
-if (process.env.NODE_ENV === "production") {
-    app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
-        const protocol = req.headers["x-forwarded-proto"] || req.protocol;
-        const host = req.headers["x-forwarded-host"] || req.get("host");
+const isDeployed = process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging";
 
-        logger.info(`swagger address ${protocol}://${host}/drink`)
-        
-        return swaggerUi.setup({
-            ...swaggerDocument,
-            servers: [{ url: `${protocol}://${host}/drink` }]
-        })(req, res, next);
-    });
-} else {
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-}
+app.use("/api-docs", swaggerUi.serve, (req, res, next) => {
+    if (!isDeployed) {
+        return swaggerUi.setup(swaggerDocument)(req, res, next);
+    }
+
+    const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+    const host = req.headers["x-forwarded-host"] || req.get("host");
+
+    logger.info(`swagger address ${protocol}://${host}/drink`);
+
+    return swaggerUi.setup({
+        ...swaggerDocument,
+        servers: [{ url: `${protocol}://${host}/drink` }]
+    })(req, res, next);
+});
 
 logger.info("Swagger docs available at: http://localhost:5001/api-docs");
 
