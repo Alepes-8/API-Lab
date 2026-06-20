@@ -25,3 +25,15 @@ jobs:
 
       - name: Push staging tag
         run: docker push $IMAGE_NAME:staging
+
+  notify-homelab:
+    needs: promote
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deploy event to Home_Lab
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.HOMELAB_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/Alepes-8/Home_Lab/dispatches \
+            -d '{"event_type":"staging-deploy","client_payload":{"image_tag":"staging"}}'
